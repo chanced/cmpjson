@@ -1,7 +1,7 @@
 # cmpjson
 A simple package for Go that compares JSON.  
 
-To determine whether json is Equal, cmpjson first marshals them into `interface{}` and then performs the equality check using [github.com/google/go-cmp](https://github.com/google/go-cmp). To format the diff [github.com/pmezard/go-difflib](https://github.com/pmezard/go-difflib) is utilized on json that has is first unmarshaled into `interface{}` and then marshaled again with indendentions.
+To determine whether json is Equal, cmpjson first marshals them into `interface{}` and then performs the equality check using [github.com/google/go-cmp](https://github.com/google/go-cmp). To format the diff [github.com/pmezard/go-difflib](https://github.com/pmezard/go-difflib) is utilized on json that is first unmarshaled into `interface{}` and then marshaled again with indendentions.
 
 ## Usage
 
