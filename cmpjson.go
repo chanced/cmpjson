@@ -1,7 +1,6 @@
 package cmpjson
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +8,8 @@ import (
 	"github.com/wI2L/jsondiff"
 )
 
-// Equal checks the equality of json.
+// MustEqual checks the equality of json.
+//
 // It panics if there is an error marshaling or unmarshaling to keep the
 // interface clean & simple.
 //
@@ -24,6 +24,10 @@ func MustEqual(a interface{}, b interface{}) (bool, string) {
 	return r, diff
 }
 
+// Equal checks the equality of json.
+//
+// The intended purpose is for unit testing equality of json. It is not intended
+// to be used outside of that purpose.
 func Equal(a interface{}, b interface{}) (bool, string, error) {
 	ab, err := marshal(a)
 	if err != nil {
@@ -33,22 +37,19 @@ func Equal(a interface{}, b interface{}) (bool, string, error) {
 	if err != nil {
 		return false, "", err
 	}
-
 	eq := jsonpatch.Equal(ab, bb)
 	if eq {
 		return true, "", nil
 	}
-
-	p, err := jsondiff.CompareJSON(ab, bb)
-	if err != nil {
-		return false, "", fmt.Errorf("cmpjson: failed to CompareJSON of %T %v\n\t%w", a, a, err)
-	}
-	buf := &bytes.Buffer{}
-	json.Indent(buf, []byte(p.String()), "", "  ")
-	return false, buf.String(), nil
+	d, err := Diff(ab, bb)
+	return false, string(d), err
 }
 
-func MustDiff(a interface{}, b interface{}) string {
+// MustDiff returns a JSON patch of the differences between of a and b.
+//
+// MustDiff panics if there is an error marshaling a or b (if necessary) or
+// performing the diff
+func MustDiff(a interface{}, b interface{}) []byte {
 	d, err := Diff(a, b)
 	if err != nil {
 		panic("cmpjson:" + err.Error())
@@ -56,22 +57,24 @@ func MustDiff(a interface{}, b interface{}) string {
 	return d
 }
 
-func Diff(a interface{}, b interface{}) (string, error) {
+func Diff(a interface{}, b interface{}) ([]byte, error) {
 	ab, err := marshal(a)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	bb, err := marshal(b)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	p, err := jsondiff.CompareJSON(ab, bb)
 	if err != nil {
-		return "", fmt.Errorf("cmpjson: failed to CompareJSON of %T %v\n\t%w", a, a, err)
+		return nil, fmt.Errorf("cmpjson: failed to compare JSON %s and %s\n\t%w", a, b, err)
 	}
-	buf := &bytes.Buffer{}
-	json.Indent(buf, []byte(p.String()), "", "  ")
-	return buf.String(), err
+	pb, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("cmpjson: failed to Marshal jsondiff.Patch %v\n\t%w", p, err)
+	}
+	return pb, err
 }
 
 func marshal(v interface{}) ([]byte, error) {
