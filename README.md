@@ -44,7 +44,7 @@ Prints:
 ```
 
 === RUN   TestSomething
-    /Users/chance/Projects/cmpjson/examples_test.go:84: [
+    /cmpjson/examples_test.go:84: [
           {
             "op": "remove",
             "path": "/fieldA/2"
@@ -60,7 +60,7 @@ Prints:
             "value": "3"
           }
         ] <nil>
-    /Users/chance/Projects/cmpjson/examples_test.go:88: dataA and dataB were not equal: [
+    /cmpjson/examples_test.go:88: dataA and dataB were not equal: [
           {
             "op": "remove",
             "path": "/fieldA/2"
