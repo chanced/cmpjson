@@ -8,7 +8,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCompareObject(t *testing.T) {
+type badMarshaler struct{}
+
+func (b badMarshaler) MarshalJSON() ([]byte, error) {
+	return nil, fmt.Errorf("failing")
+}
+
+func TestMustEqual(t *testing.T) {
+	assert := require.New(t)
+	defer func() { recover() }()
+	cmpjson.MustEqual(badMarshaler{}, badMarshaler{})
+	assert.FailNow("failed to panic")
+}
+
+func TestEqual(t *testing.T) {
 	assert := require.New(t)
 	a := []byte(`{ "v": "v"}`)
 	b := []byte(`{ "v": "v"}`)
@@ -33,6 +46,6 @@ func TestCompareObject(t *testing.T) {
 	assert.NotEmpty(cmpjson.Diff(a, b))
 	fmt.Println(cmpjson.Diff(a, b))
 }
-func TestCompareArray(t *testing.T) {
 
+func TestCompareArray(t *testing.T) {
 }
